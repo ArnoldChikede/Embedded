@@ -1,0 +1,5 @@
+https://www.circuitstate.com/pinouts/doit-esp32-devkit-v1-wifi-development-board-pinout-diagram-and-reference/#:~:text=On%20this%20page%2C%20you%20will%20find%20a%20beautiful,have%20a%20great%20tutorial%20to%20get%20you%20started.
+
+https://docs.factoryio.com/manual/shortcuts-controls/
+
+opc.tcp://Arnold_Chikede:4840

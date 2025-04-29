@@ -1,0 +1,7 @@
+MIT INVETERS
+
+1..LEARN TO DECOMPOSE ANY SINUSOIDAL SIGNAL INTO ITS DC COMPONENT AND COSINES AND SINES ...SIGNAL AND WAVE TRANSFORMATIONS
+2 sinusoids are even waveforms why 
+3 even waveforms eg cosine are symmetrical about the Y axis mirror line and even waveforms(which are no pure sin or cos) are made from  cosines coa teh reason being we out to make an even from even functions fo thus we have only cos and dc component and no sin in teh fourier analyais same applies to ODD waveforms no cosine sbut only sines .
+4The reason why in fourier analysius youcan break down the sifnal into corresponding cos and sin functions is because they are orthogonal simply meaning that their dot product is zero and they dont mix up.
+5
