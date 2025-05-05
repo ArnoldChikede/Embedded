@@ -14,34 +14,45 @@
 
 
 
-#define VIN_PWER_PIN 34             //ADC 6
-#define VPR_IN   32           //ADC 4
+#define POT_POWER_PIN 12             //ADC 6
+#define VOT_IN   32           //ADC 4
 
-#define VPM_IN   35            //ADC 7
 
+#define task_pin  27       
+#define Duty_ratio_Pin  35            //ADC 7
 #define PWM_PIN 23
-
 #define TEST_PIN 22
 
-int raw_Pulse_Width_in6 =0;
+int raw_Pulse_Width_in7 =0;
+int raw_Pulse_Width_in4 =0;
 
-int Pulse_width_V = 0;
+int Pulse_width_7 = 0;
+int Pulse_width_4 = 0;
 
-void app_main(void)
+int duty_updated =10; //gobal varibale
 
+mcpwm_cmpr_handle_t ret_cmpr=NULL;
+
+void vTaskCode( void * pvParameters )       //task decleratration with how its gonna perform
 {
+  
+    gpio_reset_pin(task_pin );
+    gpio_reset_pin(POT_POWER_PIN);
+    gpio_reset_pin(Duty_ratio_Pin);
+    gpio_set_direction(task_pin , GPIO_MODE_OUTPUT  );
+    gpio_set_direction(POT_POWER_PIN , GPIO_MODE_OUTPUT  );
+    gpio_set_direction(Duty_ratio_Pin, GPIO_MODE_INPUT  );
+    gpio_set_level( task_pin ,1);
+    gpio_set_level( POT_POWER_PIN ,1);
+   
 
-
-    gpio_reset_pin(TEST_PIN);
-    gpio_set_direction(TEST_PIN,   GPIO_MODE_OUTPUT );
-    gpio_set_level( TEST_PIN, 1);
-
-    adc_oneshot_unit_handle_t ADC1_handle;
-    adc_oneshot_unit_init_cfg_t init_config6 = {
+    adc_oneshot_unit_handle_t ADC7_handle;
+    adc_oneshot_unit_init_cfg_t init_config7 = {
         .unit_id = ADC_UNIT_1,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config6, &ADC1_handle));    //instance created and installed now we move to setting upt the settings for the channel
+
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config7, &ADC7_handle));    //instance created and installed now we move to setting upt the settings for the channel remember for a unit you just change  mke the hanle once n use it on multiple c channels
     
     
     //configuring the channels
@@ -50,8 +61,8 @@ void app_main(void)
         .bitwidth = ADC_BITWIDTH_DEFAULT,   //bitwidth isa simply how much time it takes to send one bit ...and baud rate=1/Tb is how many buts per second.
         .atten = ADC_ATTEN_DB_12,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(ADC1_handle, ADC_CHANNEL_6, &config));  //  now we configured our channel we move on to calibration to get value on mV
-
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(ADC7_handle, ADC_CHANNEL_7, &config));  //  now we configured our channel we move on to calibration to get value on mV
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(ADC7_handle, ADC_CHANNEL_4, &config)); 
 
      //setting calibtration scheme for VIN_PWE_handle
      adc_cali_handle_t cali_handle_Unit1 ;
@@ -61,24 +72,73 @@ void app_main(void)
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
     
-    
     //error checking and calling out different calibraqtion schemes for different channels
     ESP_ERROR_CHECK(adc_cali_create_scheme_line_fitting(&cali_config_Unit1, &cali_handle_Unit1));
     
-   
+
+    while(1){
+
+
+    //vTaskDelay(1000/portTICK_PERIOD_MS);
+
+    adc_oneshot_read(ADC7_handle,ADC_CHANNEL_7, &raw_Pulse_Width_in7);   //notice how i use the adrerss of and the pointer//....ref from top of code 
+    adc_oneshot_read(ADC7_handle,ADC_CHANNEL_4, &raw_Pulse_Width_in4); 
+    adc_cali_raw_to_voltage(cali_handle_Unit1, raw_Pulse_Width_in7 , &Pulse_width_7);
+    adc_cali_raw_to_voltage(cali_handle_Unit1, raw_Pulse_Width_in4 , &Pulse_width_4);  //This is used to measure the maximum e
+
+
+   float duty = ((float)Pulse_width_7/Pulse_width_4)*50000;
+   int duty_updated = (int)duty;
+   int DCycle_percent = (int) (((float)Pulse_width_7/Pulse_width_4)*100);
+
     
-int Resoulution_hz = 100000;
-int Period_ticks = 50000;          //has to be below 65 535
-int Compare_value =25030;     //For setting the duty cyle
-float Duty_Ratio= ((float)Compare_value/Period_ticks)*100;
-printf("Duty cycle is %0.2f %%\n", Duty_Ratio);
+    printf("Voltage is %d \n", Pulse_width_7 );
+    //printf("Voltage SUPPLY is %d \n", Pulse_width_4 );
+    printf("duty_ratio %d \n", duty_updated );
+    printf("duty_ratio %d%%\n", DCycle_percent );
+
+    mcpwm_comparator_set_compare_value(ret_cmpr, duty_updated );
+    
+ 
+
+
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+
+    }
+}
 
 
 
+
+
+void vOtherFunction( void )   //fucntion with the configuration and  parameters for the created task
+{
+static uint8_t ucParameterToPass;
+TaskHandle_t xHandle = NULL;
+
+  xTaskCreate( vTaskCode, "NAME",8192, &ucParameterToPass, tskIDLE_PRIORITY, &xHandle );
+  configASSERT( xHandle );
+  
+}
+
+
+
+
+
+void app_main(void)
+
+{
 
 //CONFIGURATION STRUCTURES FOR MCPWM
 
 //TIMERS configuration structure;
+
+int Resoulution_hz = 100000;
+int Period_ticks = 50000;          //has to be below 65 535
+int Compare_value =50000;     //For setting the duty cyle
+//float Duty_Ratio= ((float)Compare_value/Period_ticks)*100;
+
+
 
 mcpwm_timer_config_t timer_config = {
 
@@ -111,8 +171,6 @@ mcpwm_operator_config_t operator_config = {
 
 };
 
-
-
 //Comparator structure
 
 mcpwm_comparator_config_t comparator_config = {
@@ -142,6 +200,8 @@ mcpwm_generator_config_t generator_config ={
 
 //ALLOCATING THE SUBMODULES EG TIMERS, COMPARATORS ANDF GENERTORS ETC TO MEMEORY WITHT TEH CONFIGURATION SETTINGS
 
+
+
 mcpwm_timer_handle_t ret_timer=NULL;
  mcpwm_new_timer( &timer_config, &ret_timer);
  mcpwm_timer_enable(ret_timer);
@@ -152,7 +212,7 @@ mcpwm_timer_handle_t ret_timer=NULL;
  mcpwm_new_operator(&operator_config, &ret_oper);
  mcpwm_operator_connect_timer(ret_oper, ret_timer );
 
- mcpwm_cmpr_handle_t ret_cmpr=NULL;
+ //mcpwm_cmpr_handle_t ret_cmpr=NULL;
  mcpwm_new_comparator(ret_oper, &comparator_config, &ret_cmpr);
  mcpwm_comparator_set_compare_value(ret_cmpr, Compare_value);  //Just set Duty Cycle to 50% (cmpr_val/period_ticks)*100  500
 
@@ -180,18 +240,15 @@ mcpwm_timer_handle_t ret_timer=NULL;
  
     
    
-    
+ printf("Duty cycle is %d %%\n", duty_updated);  //just checking global variable 
+
+
+ vOtherFunction(); // calling the  fuction adn bringing ti to life 
 
 
 
 
-
-
-
-
-    //adc_oneshot_read(ADC1_handle,ADC_CHANNEL_6, &raw_Pulse_Width_in6);   //notice how i use the adrerss of and the pointer//....ref from top of code 
-   // adc_cali_raw_to_voltage(cali_handle_Unit1, raw_Pulse_Width_in6 , &Pulse_width_V);
-    
+   
 
 
 }

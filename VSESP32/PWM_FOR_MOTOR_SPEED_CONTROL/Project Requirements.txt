@@ -1,0 +1,19 @@
+Project Requirements and scope 
+
+
+Make sure you cite the scientific papers, and books, datasheets, etc 
+
+Automotive blower 3 amps
+Driver for at least 3 amps or a bit greater
+Dev kit for PWM 
+Can change with respect to frequency
+Generator with a display  to show frequency  and duty factor
+
+Think about voltage spikes and overvoltage suppression coz of inductive parts when turning on and off so take careful consideration such as overvoltage  
+
+after break show generator whch can be used to generate pwm 
+
+
+ONLY ZIP FOR THE PRESANTATION AND PROJECT.....FINAL presentation on PDF 
+JUNE 12 LAST DATE
+
