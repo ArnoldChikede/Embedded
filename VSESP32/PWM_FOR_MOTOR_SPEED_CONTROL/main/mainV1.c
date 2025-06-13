@@ -14,6 +14,8 @@
 
 
 
+#define PP 18
+
 #define POT_POWER_PIN 12             //ADC 6
 #define VOT_IN   32           //ADC 4
 
@@ -31,11 +33,18 @@ int Pulse_width_4 = 0;
 
 int duty_updated =10; //gobal varibale
 
+int  Duty_Resolution  = 1000;
+
 mcpwm_cmpr_handle_t ret_cmpr=NULL;
 
 void vTaskCode( void * pvParameters )       //task decleratration with how its gonna perform
 {
   
+   
+    gpio_reset_pin(PP );
+    gpio_set_direction(PP, GPIO_MODE_OUTPUT  );
+    gpio_set_level( PP ,1);
+
     gpio_reset_pin(task_pin );
     gpio_reset_pin(POT_POWER_PIN);
     gpio_reset_pin(Duty_ratio_Pin);
@@ -87,22 +96,22 @@ void vTaskCode( void * pvParameters )       //task decleratration with how its g
     adc_cali_raw_to_voltage(cali_handle_Unit1, raw_Pulse_Width_in4 , &Pulse_width_4);  //This is used to measure the maximum e
 
 
-   float duty = ((float)Pulse_width_7/Pulse_width_4)*50000;
+   float duty = ((float)Pulse_width_7/Pulse_width_4)* Duty_Resolution ;
    int duty_updated = (int)duty;
    int DCycle_percent = (int) (((float)Pulse_width_7/Pulse_width_4)*100);
 
     
     printf("Voltage is %d \n", Pulse_width_7 );
     //printf("Voltage SUPPLY is %d \n", Pulse_width_4 );
-    printf("duty_ratio %d \n", duty_updated );
+   // printf("duty_ratio %d \n", duty_updated );
     printf("duty_ratio %d%%\n", DCycle_percent );
 
-    mcpwm_comparator_set_compare_value(ret_cmpr, duty_updated );
+    mcpwm_comparator_set_compare_value(ret_cmpr, duty_updated );  //duty updated is just the compare val
     
  
 
 
-    vTaskDelay(1000/portTICK_PERIOD_MS);
+    vTaskDelay(250/portTICK_PERIOD_MS);
 
     }
 }
@@ -131,11 +140,12 @@ void app_main(void)
 
 //CONFIGURATION STRUCTURES FOR MCPWM
 
-//TIMERS configuration structure;
+//TIMERS configuration structure;  Resolution / period ticks = frequency 
 
-int Resoulution_hz = 100000;
-int Period_ticks = 50000;          //has to be below 65 535
-int Compare_value =50000;     //For setting the duty cyle
+
+int Resoulution_hz = 800000; //0 0 ;// 100000;            //should be less that the max frequency of the clck( How fast the timer counts )
+int Period_ticks = Duty_Resolution ; //1000;       //50000;          //has to be below 65 535(The duty cycle resoluion is hidden here )
+int Compare_value = Period_ticks/2 ;      //For setting the duty cyle
 //float Duty_Ratio= ((float)Compare_value/Period_ticks)*100;
 
 

@@ -7,5 +7,8 @@
     ],
     "idf.portWin": "COM9",
     "idf.toolsPathWin": "C:\\Users\\Arnold\\.espressif",
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "files.associations": {
+        "mcpwm_gen.h": "c"
+    }
 }
