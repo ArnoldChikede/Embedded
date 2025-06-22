@@ -1,0 +1,24 @@
+Some of the mostimportant nots on SPI are 
+
+	full duplex
+	by default when you send a bit you are always receiving a bit at the same time
+	so you have to read the received bits evenif you dont want them be it dummy bits or useful bits you still gotta read them because there will be a buffer overflow if you dont 
+        SDI=MISO
+	SDO=MOSI 
+	The high-speed signals of an SPI interface limit its data transfer only over short distances
+	
+
+
+
+https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html
+
+
+Some part UART communication
+
+	Universal Asynchronous Receiver Transmitter
+	The word Asynchronous simply means that There is no shared clock as in the SPI comm protocol wch removes the Synchronous part from the context 
+	Serial simply meaning that bits are sent one fter the other 
+	Baud rate is agreed on before starting thereby the clk isnt present 
+	hERE its more like deciding say after each and evry 10s we shall have a a transfer of bits and we hope this will happpen ifthere is a mistake e trys to recieve at 11s ..we miss the info
+
+https://resources.pcb.cadence.com/blog/2022-comparing-uart-vs-spi-speed
