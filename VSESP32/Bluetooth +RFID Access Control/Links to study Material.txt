@@ -2,9 +2,12 @@ Some of the mostimportant nots on SPI are
 
 	full duplex
 	by default when you send a bit you are always receiving a bit at the same time
-	so you have to read the received bits evenif you dont want them be it dummy bits or useful bits you still gotta read them because there will be a buffer overflow if you dont 
+	so you have to read the received bits even if you don't want them, be it dummy bits or useful bits, you still got to read them because there will be a buffer overflow if you dont 
         SDI=MISO
 	SDO=MOSI 
+	CS= Chip select
+	CLK=serial clock 
+
 	The high-speed signals of an SPI interface limit its data transfer only over short distances
 	
 
